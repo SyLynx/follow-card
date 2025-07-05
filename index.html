@@ -1,0 +1,124 @@
+<!-- follow-card-template.html (UI finale v5 — checkbox réaligné + notes) -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template — Twitter Follow Card</title>
+  <style>
+    /* ---------- BASE -------------------------------------------------- */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--ctrl-h:44px;} /* hauteur uniforme pour tous les contrôles */
+    body{
+      font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+      background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;min-height:100vh;
+    }
+
+    /* ---------- CONTROLS WRAPPER ------------------------------------- */
+    .controls{
+      display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:center;
+      background:rgba(245,248,250,0.9);border-radius:24px;padding:28px 32px;box-shadow:0 4px 20px rgba(22,40,65,.12);
+    }
+    .controls label{
+      display:flex;flex-direction:column;gap:6px;min-width:220px;align-items:flex-start;position:relative;font-size:15px;font-weight:600;color:#0f1419;
+    }
+
+    /* ---------- TEXT / URL INPUTS ------------------------------------ */
+    .controls input[type="text"],
+    .controls input[type="url"]{
+      height:var(--ctrl-h);width:100%;padding:0 14px;border:1.6px solid #d0e4fa;border-radius:10px;background:#f7fbff;font-size:15px;transition:border .2s,box-shadow .2s;
+    }
+    .controls input[type="text"]:focus,
+    .controls input[type="url"]:focus{
+      border-color:#1d9bf0;box-shadow:0 0 0 3px #bae4ff80;outline:none;background:#fff;
+    }
+
+    /* ---------- FILE UPLOAD ------------------------------------------ */
+    .upload-btn-wrapper{position:relative;display:block;width:100%;}
+    .upload-btn{
+      height:var(--ctrl-h);width:100%;border:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#1d9bf0;color:#fff;font-weight:600;font-size:15px;cursor:pointer;box-shadow:0 3px 12px #bae4ff66;transition:background .15s,transform .1s;
+    }
+    .upload-btn:hover{background:#1681cc;transform:translateY(-1px) scale(1.02);} 
+    .controls input[type="file"]{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px;}
+    .file-name{position:absolute;left:0;bottom:-18px;width:100%;font-size:12px;color:#5b7083;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* ---------- CHECKBOX --------------------------------------------- */
+    .checkbox-label{
+      flex-direction:row !important;align-items:center !important;gap:10px !important;min-width:auto;align-self:flex-end; /* aligne bas comme les autres */
+      height:var(--ctrl-h);line-height:var(--ctrl-h);
+    }
+    .checkbox-label input{width:18px;height:18px;cursor:pointer;margin:0;}
+
+    /* ---------- ACTION BUTTON ---------------------------------------- */
+    #btnUpdate{
+      height:var(--ctrl-h);padding:0 32px;border:none;border-radius:9999px;background:linear-gradient(90deg,#1d9bf0 0%,#1a8cd8 100%);color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 5px 20px #bae4ff69;transition:background .17s,box-shadow .13s,transform .08s;
+    }
+    #btnUpdate:hover{background:linear-gradient(90deg,#188cd1 0%,#146ca4 100%);box-shadow:0 3px 12px #99d9ff6b;transform:translateY(-1px) scale(1.01);}
+
+    /* ---------- CARD -------------------------------------------------- */
+    .card{display:inline-flex;align-items:center;gap:12px;background:#15202b;padding:16px 24px;border-radius:14px;min-width:360px;max-width:620px;box-shadow:0 3px 14px #1b273845;}
+    .avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;background-size:cover;background-position:center;background-color:#0f1419;outline:2px solid #0f1419;box-shadow:0 2px 8px #0003;}
+    .username{font-weight:700;font-size:17px;color:#fff;display:inline-flex;align-items:center;gap:5px;}
+    .verified{width:20px;height:20px;flex-shrink:0;}
+    .follow-text{font-weight:400;font-size:17px;color:#8b98a5;}
+
+    @media print{.controls{display:none!important;}}
+  </style>
+</head>
+<body>
+  <form class="controls" onsubmit="return false;">
+    <label>Nom d'utilisateur
+      <input type="text" id="inputName" value="TS4 Nailou" />
+    </label>
+    <label>URL de l'avatar
+      <input type="url" id="inputAvatar" placeholder="https://..." />
+    </label>
+    <label>Ou upload ton avatar
+      <span class="upload-btn-wrapper">
+        <button type="button" class="upload-btn" id="fakeUpload">Choisir une image</button>
+        <input type="file" id="inputFile" accept="image/*" />
+        <span class="file-name" id="fileName"></span>
+      </span>
+    </label>
+    <label class="checkbox-label">Badge vérifié
+      <input type="checkbox" id="inputVerified" checked />
+    </label>
+    <button id="btnUpdate" type="button">Mettre à jour</button>
+  </form>
+
+  <div id="card" class="card">
+    <div id="avatar" class="avatar" style="background-image:url('https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png')"></div>
+    <span class="username" id="displayName">
+      TS4 Nailou
+      <svg id="verifiedIcon" class="verified" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-label="Compte certifié"><circle cx="12" cy="12" r="12" fill="#1d9bf0"/><path d="M10.153 15.469l-2.66-2.66a.75.75 0 10-1.06 1.061l3.19 3.19a.75.75 0 001.061 0l6.659-6.66a.75.75 0 10-1.06-1.06l-6.13 6.129z" fill="#fff"/></svg>
+    </span>
+    <span class="follow-text">vous suit</span>
+  </div>
+
+  <script>
+    const $=id=>document.getElementById(id);
+    const inputName=$('inputName'),inputAvatar=$('inputAvatar'),inputFile=$('inputFile'),inputVerified=$('inputVerified');
+    const btnUpdate=$('btnUpdate'),avatar=$('avatar'),displayName=$('displayName'),verifiedIcon=$('verifiedIcon'),fileNameSpan=$('fileName'),fakeUpload=$('fakeUpload');
+
+    /* Refresh Card ---------------------------------------------------- */
+    const refreshCard=()=>{
+      displayName.childNodes[0].nodeValue=inputName.value||'';
+      verifiedIcon.style.display=inputVerified.checked?'inline':'none';
+      if(inputAvatar.value.trim()) avatar.style.backgroundImage=`url('${inputAvatar.value}')`;
+    };
+    inputVerified.addEventListener('change',refreshCard);
+    btnUpdate.addEventListener('click',refreshCard);
+    ['inputName','inputAvatar'].forEach(id=>$(id).addEventListener('keydown',e=>e.key==='Enter'&&refreshCard()));
+
+    /* Upload ---------------------------------------------------------- */
+    inputFile.addEventListener('change',e=>{
+      const file=e.target.files[0];if(!file) return;
+      const reader=new FileReader();
+      reader.onload=ev=>{avatar.style.backgroundImage=`url('${ev.target.result}')`;inputAvatar.value='';fileNameSpan.textContent=file.name;};
+      reader.readAsDataURL(file);
+    });
+    fakeUpload.addEventListener('click',()=>inputFile.click());
+  </script>
+</body>
+</html>
